@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Movie Recommendation System</h1>
+        <div class="grid-container" id="genre-grid">
+            <!-- JavaScript will populate genres here -->
+        </div>
+        <button class="recommend-btn" onclick="recommendMovies()">Recommend</button>
+        <div class="modal" id="recommendationModal">
+            <h2>Recommended Movies</h2>
+            <ul id="recommendations"></ul>
+            <button class="close-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        const genres = ["Action", "Anime", "Children", "Comedy", "Crime", "Documentaries", "Dramas", "Horror", "International", "Romantic", "Sci-Fi", "Thrillers"]; // Add all genres here
+
+        const gridContainer = document.getElementById('genre-grid');
+
+        genres.forEach(genre => {
+            const genreDiv = document.createElement('div');
+            genreDiv.classList.add('genre');
+            genreDiv.textContent = genre;
+            genreDiv.onclick = () => genreDiv.classList.toggle('selected');
+            gridContainer.appendChild(genreDiv);
+        });
+
+        function recommendMovies() {
+            const selectedGenres = Array.from(document.querySelectorAll('.genre.selected')).map(genreDiv => genreDiv.textContent);
+
+            fetch('/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ genres: selectedGenres })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const recommendations = document.getElementById('recommendations');
+                recommendations.innerHTML = '';
+                data.forEach(movie => {
+                    const li = document.createElement('li');
+                    li.textContent = movie;
+                    recommendations.appendChild(li);
+                });
+                document.getElementById('recommendationModal').classList.add('active');
+            });
+        }
+
+        function closeModal() {
+            document.getElementById('recommendationModal').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
